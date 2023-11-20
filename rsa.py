@@ -10,29 +10,34 @@ def miller_rabin(number, k):
 
     s = 0
     m = number - 1  #s e m vem da forma de escrever um número par (2^s)*m. para saber mais, veja o tcc do daniel chaves de lima
-    while m%2 == 0: #enquanto m mod 2 for 0, ele divide por 2 para descobrir o expoente 's' e o número ímpar 'm'
-        m = m/2     #atualiza m
+    tuple = divmod(m, 2) #faz uma dupla, onde o primeiro é o resultado e o segundo é o resto, usamos pq % para mod não dá conta de números grandes.
+    while tuple[1] == 0: #enquanto m mod 2 for 0, ele divide por 2 para descobrir o expoente 's' e o número ímpar 'm'
+        m = tuple[0] #atualiza m
+        tuple = divmod(m, 2) #atualiza a tupla
         s += 1
 
+    # no while anterior descobrimos o m ímpar que queremos, como m vai ser um expoente que faria o cálculo do mod ser enorme
+    # convertemos ele para a base binária, portanto r é a lista de restos de m, necessário para fazer essa converssão
     r = []
     while m > 0:
-        r.append(m % 2)
-        m = (m - (m % 2))/2
+        tuple = divmod(m, 2)
+        m = tuple[0]
+        r.append(tuple[1])
 
-    bases = []
-    length = len(bases)
+    coprime_list = []
+    length = len(coprime_list)
     while length < k:
         randomic_number = random.randrange(2, number-1) #imaginando number primo, pega um dos p-1 numeros coprimos com number, é disso que ocorre o 1/4 de falha (pseudo primo)
-        if randomic_number not in bases:
-            bases.append(randomic_number)
-            length = len(bases)
+        if randomic_number not in coprime_list:
+            coprime_list.append(randomic_number)
+            length = len(coprime_list)
 
-    for b in bases:
-        e = b
-        y = b #otimização do daniel, pois m é sempre ímpar e esse primeiro b vai ser sempre elevado a 1
-        for expoente in r[1:]: #otimização do cálculo de resto de uma potência muito grande
+    for coprime in coprime_list:
+        e = coprime
+        y = e #otimização do daniel, pois m é sempre ímpar e esse primeiro coprimo vai ser sempre elevado a 1
+        for exponent in r[1:]: #otimização do cálculo de resto de uma potência muito grande
             e = (e ** 2) % number
-            if expoente == 1:
+            if exponent == 1:
                 y = (y * e) % number
         if y != 1 and y != number-1:
             i = 1
@@ -47,12 +52,12 @@ def miller_rabin(number, k):
     return True
 
 def prime_generator(bits):
-   is_not_prime = True
-   while is_not_prime:
-       prime = odd_number_generator_with_k_bits(bits)
-       if(miller_rabin(prime, 40)):
+    is_not_prime = True
+    while is_not_prime:
+        prime = odd_number_generator_with_k_bits(bits)
+        if(miller_rabin(prime, 40)):
             is_not_prime = False
-   return prime
+    return prime
 
 """A função retorna um número k de bits aleatórios.
 exemplo: k = 5
@@ -70,13 +75,8 @@ def odd_number_generator_with_k_bits(k_bits):
     odd = False
     while not odd:
         number = secrets.randbits(k_bits)
-        print("odd function: ", number) #print que testa o número sorteado
-        print(bin(number))
         number = number | (1 << k_bits - 1) # shifta o 1 e joga zeros atrás, suponha k_bits = 3, entao teremos 100 como resultado (comentário sobre os parênteses).
         and_result = number & 1 #se o bit menos significativo for 1, esse and bitwise vai dar 1, o que significa que o número sorteado é ímpar
-        print("after 'or' in odd function: ", number) #testa se o número tem a quantidade de bits desejada
-        print(bin(number))
-        print("'bitwise and' result: ", and_result) #mostra o resultado do and bitwise
         if (and_result == 1):
             odd = True
     return number
