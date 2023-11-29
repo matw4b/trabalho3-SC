@@ -48,7 +48,7 @@ def miller_rabin(number, k):
                 i += 1
             if y != number - 1:
                 return False
-    print("retorno true: ", True)
+    
     return True
 
 def prime_generator(bits):
@@ -81,6 +81,19 @@ def odd_number_generator_with_k_bits(k_bits):
             odd = True
     return number
 
+""" retorna o par de chaves pública e privada
+"""
+def rsa_keys():
+
+    p = prime_generator(1024)
+    q = prime_generator(1024)
+    n = p*q
+    phi_n = (p-1)*(q-1) # função totiente de euler
+    e = 65537 # número primo com peso de hamming baixo
+    d = pow(e, -1, phi_n) # calcula o inteiro que é o inverso multiplicativo de e, tal que ed mod phi_n = 1
+
+    return (n, e), (n, d)
+
 if __name__ == "__main__":
     number = odd_number_generator_with_k_bits(5) #lembrar de chamar na main com 1024 bits. estou usando 5 bits apenas de teste
     print("result: ", number)
@@ -89,3 +102,6 @@ if __name__ == "__main__":
     print("é primo: ", primo)
     prime = prime_generator(1024)
     print("primo gigante: ", prime)
+    chaves = rsa_keys()
+    print("publica: ", chaves[0])
+    print("privada: ", chaves[1])
